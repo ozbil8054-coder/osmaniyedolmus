@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Şoför Paneli — Dolmuş Osmaniye</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:#0f1923; --surface:#1a2535; --accent:#f5a623;
+  --red:#e84545; --green:#2ecc71; --text:#e8eaf0;
+  --muted:#6b7a99; --border:rgba(255,255,255,0.07);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; max-width:480px; margin:0 auto; display:flex; flex-direction:column; }
+
+.header { padding:20px 20px 16px; border-bottom:1px solid var(--border); }
+.header-top { display:flex; justify-content:space-between; align-items:flex-start; }
+.logo { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; color:var(--accent); line-height:1; }
+.logo-sub { font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace; letter-spacing:1px; margin-top:2px; }
+.conn-badge { display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; border:1px solid var(--border); font-size:11px; font-family:'IBM Plex Mono',monospace; background:rgba(255,255,255,0.04); }
+.conn-dot { width:7px; height:7px; border-radius:50%; background:var(--muted); }
+.conn-dot.connected { background:var(--green); animation:blink 1s infinite; }
+.conn-dot.error { background:var(--red); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.setup-section { padding:20px; border-bottom:1px solid var(--border); }
+.field-label { font-size:11px; font-family:'IBM Plex Mono',monospace; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:10px; }
+.field-group { margin-bottom:16px; }
+.field-group:last-child { margin-bottom:0; }
+
+.select-field, .input-field {
+  width:100%; padding:13px 16px; background:var(--surface);
+  border:2px solid var(--border); border-radius:12px;
+  color:var(--text); font-size:15px; font-family:'IBM Plex Sans',sans-serif;
+  font-weight:600; outline:none; transition:border-color 0.2s;
+}
+.select-field { cursor:pointer; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7a99' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:40px; }
+.input-field { font-family:'IBM Plex Mono',monospace; font-weight:700; letter-spacing:1px; }
+.input-field::placeholder { color:var(--muted); font-weight:400; }
+.select-field:focus, .input-field:focus { border-color:var(--accent); }
+
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:20px; border-bottom:1px solid var(--border); }
+.stat-card { background:var(--surface); border-radius:14px; padding:16px; text-align:center; border:1px solid var(--border); }
+.stat-value { font-family:'Bebas Neue',sans-serif; font-size:40px; line-height:1; color:var(--accent); }
+.stat-unit { font-size:13px; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
+.stat-label { font-size:11px; color:var(--muted); margin-top:4px; font-family:'IBM Plex Mono',monospace; letter-spacing:1px; }
+
+.seats-section { padding:20px; border-bottom:1px solid var(--border); }
+.seats-control { display:flex; align-items:center; gap:16px; justify-content:center; margin-top:12px; }
+.seat-btn { width:52px; height:52px; border-radius:14px; border:none; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:700; transition:all 0.15s; font-family:'IBM Plex Mono',monospace; }
+.seat-btn:active { transform:scale(0.92); }
+.seat-minus { background:rgba(232,69,69,0.15); color:var(--red); border:2px solid rgba(232,69,69,0.3); }
+.seat-plus { background:rgba(46,204,113,0.15); color:var(--green); border:2px solid rgba(46,204,113,0.3); }
+.seat-display { font-family:'Bebas Neue',sans-serif; font-size:54px; color:var(--text); line-height:1; min-width:100px; text-align:center; }
+.seat-total { font-size:13px; color:var(--muted); font-family:'IBM Plex Mono',monospace; text-align:center; margin-top:6px; }
+
+.main-btn-area { padding:20px; }
+.main-btn { width:100%; padding:20px; border-radius:16px; border:none; font-size:18px; font-family:'IBM Plex Sans',sans-serif; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:10px; }
+.main-btn:active { transform:scale(0.97); }
+.btn-start { background:var(--accent); color:#000; }
+.btn-stop { background:var(--red); color:#fff; }
+
+.gps-info { margin-top:12px; text-align:center; font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--muted); }
+.gps-info.good { color:var(--green); }
+.gps-info.bad { color:var(--red); }
+.last-update { text-align:center; font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); padding:0 20px 20px; }
+
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--surface); border:1px solid var(--border); color:var(--text); padding:12px 20px; border-radius:12px; font-size:13px; z-index:500; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-top">
+    <div>
+      <div class="logo">ŞOFÖR PANELİ</div>
+      <div class="logo-sub">DOLMUŞOSMANİYE.COM</div>
+    </div>
+    <div class="conn-badge">
+      <div class="conn-dot" id="conn-dot"></div>
+      <span id="conn-text">Bekleniyor</span>
+    </div>
+  </div>
+</header>
+
+<div class="setup-section">
+  <div class="field-group">
+    <div class="field-label">Çalıştığınız Hat</div>
+    <select class="select-field" id="route-select">
+      <option value="hat1">Hat 1 — Otogar → Hastane</option>
+      <option value="hat2">Hat 2 — Merkez → Karacaoğlan</option>
+      <option value="hat3">Hat 3 — Merkez → Organize Sanayi</option>
+    </select>
+  </div>
+  <div class="field-group">
+    <div class="field-label">Araç Plakası</div>
+    <input class="input-field" id="bus-id-input" placeholder="Örn: 80 AB 123" maxlength="12">
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value" id="speed-val">0</div>
+    <div class="stat-unit">km/sa</div>
+    <div class="stat-label">HIZ</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="acc-val">—</div>
+    <div class="stat-unit">m</div>
+    <div class="stat-label">GPS DOĞRULUĞU</div>
+  </div>
+</div>
+
+<div class="seats-section">
+  <div class="field-label">Boş Koltuk</div>
+  <div class="seats-control">
+    <button class="seat-btn seat-minus" onclick="changeSeat(-1)">−</button>
+    <div><div class="seat-display" id="seat-val">6</div></div>
+    <button class="seat-btn seat-plus" onclick="changeSeat(+1)">+</button>
+  </div>
+  <div class="seat-total">/ 12 toplam koltuk</div>
+</div>
+
+<div class="main-btn-area">
+  <button class="main-btn btn-start" id="main-btn" onclick="toggleSharing()">
+    📡 Konumu Paylaşmaya Başla
+  </button>
+  <div class="gps-info" id="gps-info">GPS bekleniyor...</div>
+</div>
+<div class="last-update" id="last-update">—</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// ⚠️ SUPABASE BİLGİLERİNİ BURAYA GİR
+// ════════════════════════════════════════════════
+const SUPABASE_URL = 'https://iybemqhmheuqgibtwkho.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_F6NTuOaohQDc8nlZyYd1Kw_uFNDSsoG';
+
+// ════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════
+let isSharing = false;
+let watchId = null;
+let shareInterval = null;
+let lastPosition = null;
+let lastSpeed = 0;
+let seatsAvailable = 6;
+const TOTAL_SEATS = 12;
+let busId = '';
+let routeId = 'hat1';
+
+// ════════════════════════════════════════════════
+// SUPABASE UPSERT
+// ════════════════════════════════════════════════
+async function upsertBus(data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/buses`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    },
+    body: JSON.stringify(data)
+  });
+  return res.ok;
+}
+
+async function deleteBus(busId, routeId) {
+  await fetch(`${SUPABASE_URL}/rest/v1/buses?bus_id=eq.${busId}&route_id=eq.${routeId}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+  });
+}
+
+// ════════════════════════════════════════════════
+// GPS
+// ════════════════════════════════════════════════
+function startGPS() {
+  if (!navigator.geolocation) {
+    setGPSStatus('❌ GPS desteklenmiyor', 'bad'); return;
+  }
+  watchId = navigator.geolocation.watchPosition(pos => {
+    lastPosition = pos;
+    const spd = pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : 0;
+    lastSpeed = spd;
+    const acc = Math.round(pos.coords.accuracy);
+    document.getElementById('speed-val').textContent = spd;
+    document.getElementById('acc-val').textContent = acc;
+    if (acc < 20) setGPSStatus(`✅ GPS iyi (±${acc}m)`, 'good');
+    else if (acc < 50) setGPSStatus(`⚠️ GPS orta (±${acc}m)`, '');
+    else setGPSStatus(`❌ GPS zayıf — dışarı çıkın (±${acc}m)`, 'bad');
+  }, () => {
+    setGPSStatus('❌ GPS izni reddedildi', 'bad');
+    showToast('⚠️ GPS izni gerekli!');
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 });
+}
+
+function setGPSStatus(msg, cls) {
+  const el = document.getElementById('gps-info');
+  el.textContent = msg;
+  el.className = 'gps-info ' + cls;
+}
+
+// ════════════════════════════════════════════════
+// PAYLAŞIM
+// ════════════════════════════════════════════════
+function toggleSharing() {
+  const inp = document.getElementById('bus-id-input').value.trim();
+  if (!inp) { showToast('⚠️ Plaka girin'); document.getElementById('bus-id-input').focus(); return; }
+  busId = inp.replace(/\s+/g,'_').toUpperCase();
+  routeId = document.getElementById('route-select').value;
+  isSharing ? stopSharing() : startSharing();
+}
+
+function startSharing() {
+  isSharing = true; updateBtn(); startGPS();
+  showToast('🟢 Konum paylaşımı başladı');
+  pushLocation();
+  shareInterval = setInterval(pushLocation, 6000);
+  document.getElementById('conn-dot').classList.add('connected');
+  document.getElementById('conn-text').textContent = 'Canlı';
+}
+
+function stopSharing() {
+  isSharing = false; updateBtn();
+  clearInterval(shareInterval);
+  if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  deleteBus(busId, routeId);
+  document.getElementById('last-update').textContent = 'Paylaşım durduruldu';
+  document.getElementById('speed-val').textContent = '0';
+  document.getElementById('conn-dot').classList.remove('connected');
+  document.getElementById('conn-text').textContent = 'Kapalı';
+  setGPSStatus('GPS bekleniyor...', '');
+  showToast('⏹ Paylaşım durduruldu');
+}
+
+async function pushLocation() {
+  if (!isSharing || !lastPosition) return;
+  const c = lastPosition.coords;
+  const ok = await upsertBus({
+    bus_id: busId,
+    route_id: routeId,
+    lat: c.latitude,
+    lng: c.longitude,
+    speed: lastSpeed,
+    accuracy: Math.round(c.accuracy),
+    seats_available: seatsAvailable,
+    total_seats: TOTAL_SEATS,
+    progress: 0.5, // TODO: rota üzerinde gerçek hesaplama
+    updated_at: new Date().toISOString()
+  });
+  if (ok) {
+    const now = new Date();
+    document.getElementById('last-update').textContent =
+      `Son gönderim: ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+  } else {
+    showToast('⚠️ Gönderim hatası');
+  }
+}
+
+// ════════════════════════════════════════════════
+// UI
+// ════════════════════════════════════════════════
+function changeSeat(d) {
+  seatsAvailable = Math.max(0, Math.min(TOTAL_SEATS, seatsAvailable + d));
+  document.getElementById('seat-val').textContent = seatsAvailable;
+}
+
+function updateBtn() {
+  const btn = document.getElementById('main-btn');
+  if (isSharing) {
+    btn.className = 'main-btn btn-stop'; btn.innerHTML = '⏹ Paylaşımı Durdur';
+    document.getElementById('route-select').disabled = true;
+    document.getElementById('bus-id-input').disabled = true;
+  } else {
+    btn.className = 'main-btn btn-start'; btn.innerHTML = '📡 Konumu Paylaşmaya Başla';
+    document.getElementById('route-select').disabled = false;
+    document.getElementById('bus-id-input').disabled = false;
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+window.addEventListener('beforeunload', () => { if (isSharing) deleteBus(busId, routeId); });
+</script>
+</body>
+</html>
